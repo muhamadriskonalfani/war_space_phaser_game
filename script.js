@@ -7,7 +7,7 @@ let config = {
     scene: { preload, create, update }
 };
 
-let ship, bullets, ufos;
+let ship, bullets, ufos, stars;
 let speed = 200;
 let bulletSpeed = 400;
 let bulletSize = 0.2;
@@ -26,6 +26,7 @@ let spawnInterval = null;
 function preload() {
     this.load.image('ship', 'assets/img/ship.jpg');
     this.load.image('bullet', 'assets/img/bullet.png');
+    this.load.image('star', 'assets/img/star.png');
 
     for (let i = 1; i <= 9; i++) {
         this.load.image(`ufo${i}`, `assets/img/ufo${i}.png`);
@@ -42,6 +43,7 @@ function create() {
     addControlListeners();
     addShootListener();
     startSpawningUfos();  // Mulai memunculkan UFO
+    createStars.call(this);
     updateSizeDisplay();
 
     this.physics.add.overlap(bullets, ufos, destroyUfo, null, this);
@@ -79,8 +81,30 @@ function addControlListeners() {
 
         button.addEventListener('mousedown', () => { movingDirection = control.direction; });
         button.addEventListener('mouseup', () => { movingDirection = null; });
-        button.addEventListener('touchstart', (event) => { event.preventDefault(); movingDirection = control.direction; });
-        button.addEventListener('touchend', (event) => { event.preventDefault(); movingDirection = null; });
+
+        button.addEventListener('touchstart', (event) => { 
+            event.preventDefault(); 
+            movingDirection = control.direction; 
+        });
+
+        button.addEventListener('touchend', (event) => { 
+            event.preventDefault(); 
+            movingDirection = null; 
+        });
+    });
+
+    // Tambahkan event listener untuk keyboard
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowUp' || event.key === 'w') movingDirection = 'up';
+        if (event.key === 'ArrowDown' || event.key === 's') movingDirection = 'down';
+        if (event.key === 'ArrowLeft' || event.key === 'a') movingDirection = 'left';
+        if (event.key === 'ArrowRight' || event.key === 'd') movingDirection = 'right';
+    });
+
+    window.addEventListener('keyup', (event) => {
+        if (['ArrowUp', 'w', 'ArrowDown', 's', 'ArrowLeft', 'a', 'ArrowRight', 'd'].includes(event.key)) {
+            movingDirection = null; // Hentikan pergerakan saat tombol dilepas
+        }
     });
 }
 
@@ -92,6 +116,19 @@ function addShootListener() {
     shootButton.addEventListener('mouseup', (event) => { event.preventDefault(); stopShooting(); });
     shootButton.addEventListener('touchstart', (event) => { event.preventDefault(); startShooting(); });
     shootButton.addEventListener('touchend', (event) => { event.preventDefault(); stopShooting(); });
+
+    // Tambahkan event listener untuk keyboard (Space dan Shift)
+    window.addEventListener('keydown', (event) => {
+        if (event.code === 'Space') {
+            startShooting();
+        }
+    });
+
+    window.addEventListener('keyup', (event) => {
+        if (event.code === 'Space') {
+            stopShooting();
+        }
+    });
 }
 
 function startShooting() {
@@ -156,11 +193,32 @@ function destroyUfo(bullet, ufo) {
     destroyedUfos++;
 }
 
+function createStars() {
+    stars = this.physics.add.group();
+
+    // Tambahkan bintang baru setiap 500ms
+    setInterval(() => {
+        let randomY = Phaser.Math.Between(10, window.innerHeight - 10); // Posisi acak di layar
+        let randomScale = Phaser.Math.FloatBetween(0.05, 0.2); // Ukuran acak bintang
+
+        let star = stars.create(window.innerWidth, randomY, 'star');
+        star.setVelocityX(-Phaser.Math.Between(50, 150)); // Kecepatan acak ke kiri
+        star.setScale(randomScale);
+        star.setAlpha(Phaser.Math.FloatBetween(0.3, 0.8)); // Transparansi acak
+
+        // Hapus bintang setelah keluar layar
+        star.setCollideWorldBounds(false);
+        star.checkWorldBounds = true;
+        star.outOfBoundsKill = true;
+    }, 500);
+}
+
 // === Fungsi Game Over ===
 function gameOver(ship, ufo) {
     ship.destroy();
     alert("Game Over! Pesawatmu tertabrak UFO.");
     this.scene.restart();
+    window.location.href = "index.html";
 }
 
 // === Fungsi Ship Pergi ke Stage Berikutnya ===
@@ -179,6 +237,7 @@ function moveShipToNextStage() {
             clearInterval(moveInterval);
             ship.destroy();
             alert("Berhasil!");
+            window.location.href = "index.html";
         }
     }, 20); // Setiap 20ms kecepatan bertambah
 }
