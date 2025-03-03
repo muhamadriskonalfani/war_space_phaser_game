@@ -14,7 +14,6 @@
     <div id="full-screen">
         <i class="fas fa-expand"></i>
     </div>
-    <div id="container"></div>
 
     <script>
         let config = {
@@ -56,7 +55,8 @@
         function update() {}
 
         function createUI() {
-            gameContainer = document.getElementById("container");
+            let gameContainer = document.createElement("div");
+            gameContainer.setAttribute("id", "container");
 
             let title = document.createElement("h1");
             title.textContent = "SPACE SHOOTER";
@@ -73,6 +73,7 @@
                 window.location.href = "game1.html";
             };
 
+            document.body.appendChild(gameContainer);
             gameContainer.appendChild(title);
             gameContainer.appendChild(ship);
             gameContainer.appendChild(startButton);

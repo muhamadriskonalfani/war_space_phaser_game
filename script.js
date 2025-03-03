@@ -8,6 +8,7 @@ let config = {
 };
 
 let ship, bullets, ufos, stars;
+let shootSound;
 let speed = 200;
 let bulletSpeed = 400;
 let bulletSize = 0.2;
@@ -27,6 +28,7 @@ function preload() {
     this.load.image('ship', 'assets/img/ship.jpg');
     this.load.image('bullet', 'assets/img/bullet.png');
     this.load.image('star', 'assets/img/star.png');
+    this.load.audio('shootSound', 'assets/audio/pew-pew.mp3');
 
     for (let i = 1; i <= 9; i++) {
         this.load.image(`ufo${i}`, `assets/img/ufo${i}.png`);
@@ -39,6 +41,8 @@ function create() {
 
     bullets = this.physics.add.group();
     ufos = this.physics.add.group();
+
+    shootSound = this.sound.add('shootSound');
 
     addControlListeners();
     addShootListener();
@@ -144,6 +148,8 @@ function stopShooting() {
 }
 
 function shootBullet() {
+    shootSound.play();
+
     let bullet = bullets.create(ship.x + 30, ship.y, 'bullet');
     bullet.setVelocityX(bulletSpeed);
     bullet.setScale(bulletSize);
